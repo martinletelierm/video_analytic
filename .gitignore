@@ -1,0 +1,15 @@
+# Model weights
+*.pt
+
+# Runtime outputs
+*.db
+
+# Video files
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Python
+__pycache__/
+*.pyc
