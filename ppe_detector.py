@@ -1,9 +1,11 @@
 # pip install ultralytics opencv-python
 
+import os
 import sys
 import sqlite3
 import datetime
 import cv2
+import numpy as np
 from ultralytics import YOLO
 
 DB_PATH = "ppe_violations.db"
@@ -236,7 +238,12 @@ def main():
     frame_number = 0
     total_violations = 0
 
-    cv2.namedWindow("PPE Detection", cv2.WINDOW_NORMAL)
+    # Only attempt GUI if a display is actually available.
+    show_window = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    if not show_window:
+        print("Note: No display detected — running headless (no live window).")
+    else:
+        cv2.namedWindow("PPE Detection", cv2.WINDOW_NORMAL)
 
     while True:
         ret, frame = cap.read()
@@ -251,17 +258,18 @@ def main():
         )
         total_violations += frame_violations
 
-        cv2.imshow("PPE Detection", annotated)
+        if show_window:
+            cv2.imshow("PPE Detection", annotated)
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                print("Quit requested by user.")
+                break
 
         if frame_number % 50 == 0:
             print(f"Frame {frame_number} | Violations so far: {total_violations}")
 
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            print("Quit requested by user.")
-            break
-
     cap.release()
-    cv2.destroyAllWindows()
+    if show_window:
+        cv2.destroyAllWindows()
     conn.close()
 
     print(f"\nTotal frames:     {frame_number}")
